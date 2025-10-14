@@ -8,6 +8,19 @@ using Azure.Core;
 
 namespace KeyVault;
 
+union CertificateOperationStatus {
+  string,
+
+  /** The certificate operation is still in progress. */
+  inProgress: "inProgress",
+
+  /** The certificate operation has completed successfully. */
+  Succeeded: "completed",
+
+  /** The certificate operation was cancelled. */
+  Failed: "cancelled",
+}
+
 /**
  * Reflects the deletion recovery level currently in effect for secrets in the current vault. If it contains 'Purgeable', the secret can be permanently deleted by a privileged user; otherwise, only the system can purge the secret, at the end of the retention interval.
  */
@@ -867,7 +880,8 @@ model CertificateOperation {
   /**
    * Status of the certificate operation.
    */
-  status?: string;
+  @lroStatus
+  status?: CertificateOperationStatus;
 
   /**
    * The status details of the certificate operation.

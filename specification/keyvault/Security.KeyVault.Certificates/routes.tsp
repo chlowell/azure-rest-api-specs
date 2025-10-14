@@ -5,6 +5,9 @@ import "./models.tsp";
 import "../Security.KeyVault.Common/common.tsp";
 
 using Azure.ClientGenerator.Core;
+using Azure.Core;
+using Azure.Core.Traits;
+
 using TypeSpec.Http;
 
 namespace KeyVault;
@@ -208,11 +211,31 @@ op deleteCertificateIssuer is KeyVaultOperation<
 >;
 
 /**
+ * Gets the creation operation associated with a specified certificate. This operation requires the certificates/get permission.
+ */
+#suppress "@azure-tools/typespec-azure-core/use-standard-operations" "Foundations.Operation is necessary for Key Vault"
+@summary("Gets the creation operation of a certificate.")
+@route("/certificates/{certificate-name}/pending")
+@get
+op getCertificateOperation is KeyVaultOperation<
+  {
+    /**
+     * The name of the certificate.
+     */
+    @path("certificate-name")
+    @clientName("name", "go")
+    certificateName: string;
+  },
+  CertificateOperation
+>;
+
+/**
  * If this is the first version, the certificate resource is created. This operation requires the certificates/create permission.
  */
 #suppress "@azure-tools/typespec-azure-core/use-standard-operations" "Foundations.Operation is necessary for Key Vault"
 @summary("Creates a new certificate.")
 @route("/certificates/{certificate-name}/create")
+@pollingOperation(getCertificateOperation)
 @post
 op createCertificate is KeyVaultOperation<
   {
@@ -420,25 +443,6 @@ op updateCertificateOperation is KeyVaultOperation<
     @body
     @Azure.ClientGenerator.Core.Legacy.flattenProperty
     certificateOperation: CertificateOperationUpdateParameter;
-  },
-  CertificateOperation
->;
-
-/**
- * Gets the creation operation associated with a specified certificate. This operation requires the certificates/get permission.
- */
-#suppress "@azure-tools/typespec-azure-core/use-standard-operations" "Foundations.Operation is necessary for Key Vault"
-@summary("Gets the creation operation of a certificate.")
-@route("/certificates/{certificate-name}/pending")
-@get
-op getCertificateOperation is KeyVaultOperation<
-  {
-    /**
-     * The name of the certificate.
-     */
-    @path("certificate-name")
-    @clientName("name", "go")
-    certificateName: string;
   },
   CertificateOperation
 >;
